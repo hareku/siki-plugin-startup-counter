@@ -1,6 +1,6 @@
-module example.com/playground
+module github.com/hareku/siki-plugin-startup-counter
 
-go 1.19
+go 1.21
 
 require github.com/gen2brain/beeep v0.0.0-20230907135156-1a38885a97fc
 
