@@ -1,14 +1,16 @@
 package main
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/gen2brain/beeep"
+	"github.com/icza/backscanner"
 )
 
 func main() {
@@ -64,19 +66,34 @@ func countInThePastDay(logFileName string) (int, error) {
 		return 0, fmt.Errorf("open log file: %w", err)
 	}
 	defer f.Close()
+	fi, err := f.Stat()
+	if err != nil {
+		return 0, fmt.Errorf("stat log file: %w", err)
+	}
 
-	scanner := bufio.NewScanner(f)
+	scanner := backscanner.New(f, int(fi.Size()))
 
 	var count int
-	for scanner.Scan() {
-		txt := scanner.Text()
+	for {
+		txt, _, err := scanner.Line()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return 0, fmt.Errorf("read line: %w", err)
+		}
+		if len(txt) == 0 {
+			continue
+		}
+
 		dt, err := time.Parse(time.RFC3339, txt)
 		if err != nil {
 			return 0, fmt.Errorf("parse time %q: %w", txt, err)
 		}
-		if time.Since(dt) <= 24*time.Hour {
-			count++
+		if time.Since(dt) > 24*time.Hour {
+			break
 		}
+		count++
 	}
 
 	return count, nil

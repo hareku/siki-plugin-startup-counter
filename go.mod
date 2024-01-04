@@ -2,7 +2,10 @@ module github.com/hareku/siki-plugin-startup-counter
 
 go 1.21
 
-require github.com/gen2brain/beeep v0.0.0-20230907135156-1a38885a97fc
+require (
+	github.com/gen2brain/beeep v0.0.0-20230907135156-1a38885a97fc
+	github.com/icza/backscanner v0.0.0-20230330133933-bf6beb754c70
+)
 
 require (
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
