@@ -74,6 +74,7 @@ func countInThePastDay(logFileName string) (int, error) {
 	scanner := backscanner.New(f, int(fi.Size()))
 
 	var count int
+	lastReset := lastResetAt()
 	for {
 		txt, _, err := scanner.Line()
 		if err != nil {
@@ -90,11 +91,22 @@ func countInThePastDay(logFileName string) (int, error) {
 		if err != nil {
 			return 0, fmt.Errorf("parse time %q: %w", txt, err)
 		}
-		if time.Since(dt) > 24*time.Hour {
+		if dt.Before(lastReset) {
 			break
 		}
 		count++
 	}
 
 	return count, nil
+}
+
+// reset count at 4:00 in JST
+func lastResetAt() time.Time {
+	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
+	now := time.Now().In(jst)
+	if now.Hour() < 4 {
+		yesterday := now.Add(-24 * time.Hour)
+		return time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 4, 0, 0, 0, jst)
+	}
+	return time.Date(now.Year(), now.Month(), now.Day(), 4, 0, 0, 0, jst)
 }
